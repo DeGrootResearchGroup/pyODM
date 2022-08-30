@@ -50,7 +50,7 @@ class SiteData():
         return self.genes
 
     def get_data_by_gene(self, gene, units="gcL", mean=True):
-        """Return timestamped data for a specific gene"""
+        """Return datestamped data for a specific gene"""
         # Extract the necessary columns
         measure_data = self.measure_data[["sampleID", "type", "unit", "value", "qualityFlag", "sampleDate"]].copy()
 
@@ -76,7 +76,7 @@ class SiteData():
         return measure_data[["sampleDate", "value"]]
 
     def get_normalized_data(self, gene_1, gene_2, units="gcL"):
-        """Return the timestamped data for a specific gene, normalized by another"""
+        """Return the datestamped data for a specific gene, normalized by another"""
         # Get the two dataframes
         data_1 = self.get_data_by_gene(gene_1, units)
         data_2 = self.get_data_by_gene(gene_2, units)
@@ -90,12 +90,23 @@ class SiteData():
         return measure_data[["sampleDate", "value"]]
 
     def get_standardized_data(self, gene_1, gene_2, units="gcL"):
-        """Return the timestamped data for a normalized conecentration, standardized by its std. dev."""
+        """Return the datestamped data for a normalized conecentration, standardized by its std. dev."""
         # Get the normalized data
         measure_data = self.get_normalized_data(gene_1, gene_2, units)
 
         # Normalize by standard deviation
         measure_data["value"] = measure_data["value"]/np.std(measure_data["value"])
+
+        # Return the data
+        return measure_data[["sampleDate", "value"]]
+
+    def get_log_standardized_data(self, gene_1, gene_2, units="gcL"):
+        """Return the datestamped data for standardized concentration, log transformed"""
+        # Get the standardized data
+        measure_data = self.get_standardized_data(gene_1, gene_2, units)
+
+        # Log transform
+        measure_data["value"] = np.log(measure_data["value"])
 
         # Return the data
         return measure_data[["sampleDate", "value"]]
