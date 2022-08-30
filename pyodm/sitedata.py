@@ -48,10 +48,13 @@ class SiteData():
         """Return the list of all genes reported"""
         return self.genes
 
-    def get_data_by_gene(self, gene, units="gcL"):
+    def get_data_by_gene(self, gene, units="gcL", mean=True):
         """Return timestamped data for a specific gene"""
+        # Extract the necessary columns
+        measure_data = self.measure_data[["sampleID", "type", "unit", "value", "qualityFlag", "sampleDate"]].copy()
+
         # Get the rows with the specified gene
-        measure_data = self.measure_data.loc[self.measure_data["type"] == gene].copy()
+        measure_data = measure_data.loc[self.measure_data["type"] == gene]
 
         # Drop any blanks
         measure_data = measure_data.dropna(subset=["value"])
@@ -63,6 +66,10 @@ class SiteData():
             measure_data.loc[measure_data["unit"] == "gcL", "value"] = measure_data["value"]/1000.0
         else:
             raise ValueError("Invalid units \"{}\" given for wastewater measure.".format(units))
+
+        # Compute the mean if needed
+        if mean:
+            measure_data = measure_data.groupby(["sampleID"]).agg({"value" : "mean", "sampleDate" : "first"})
 
         # Return the data
         return measure_data[["sampleDate", "value"]]
