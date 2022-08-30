@@ -73,3 +73,17 @@ class SiteData():
 
         # Return the data
         return measure_data[["sampleDate", "value"]]
+
+    def get_normalized_data(self, gene_1, gene_2, units="gcL"):
+        """Return the timestamped data for a specific gene, normalized by another"""
+        # Get the two dataframes
+        data_1 = self.get_data_by_gene(gene_1, units)
+        data_2 = self.get_data_by_gene(gene_2, units)
+
+        # Merge the frames and compute normalized signal
+        measure_data = data_1.merge(data_2, how="inner", on="sampleID")
+        measure_data["value"] = measure_data["value_x"]/measure_data["value_y"]
+        measure_data = measure_data.rename(columns={"sampleDate_x" : "sampleDate"}).drop(columns=["sampleDate_y"])
+
+        # Return the data
+        return measure_data[["sampleDate", "value"]]
