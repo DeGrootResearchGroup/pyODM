@@ -1,6 +1,18 @@
 import pandas as pd
 import numpy as np
 
+from scipy.interpolate import LSQUnivariateSpline
+
+def delta_days(date_2, date_1):
+    """Function to return the number of days between two dates"""
+    delta = date_2 - date_1
+    return delta.days
+
+def spline_model(date, start_date, func):
+    """Function implementing a spline model func(x) with the date represented as a float"""
+    day = delta_days(date, start_date)
+    return func(day)
+
 class SiteData():
     """Class used to store and access data for a named sampling site"""
 
@@ -14,7 +26,6 @@ class SiteData():
         self._site_id = site_id
 
         # Read relevant information about the site
-        #site_data = self.read_sheet(data_file, Sheets.site)
         site_data = self._data.site
         row = site_data.loc[site_data["siteID"] == site_id]
         self.name = row["name"].values[0]
@@ -63,8 +74,12 @@ class SiteData():
         # Convert units as requires (note: only "gcL" and "gcMl" are supported)
         if units == "gcL":
             measure_data.loc[measure_data["unit"] == "gcMl", "value"] = measure_data["value"]*1000.0
+            # Replace zeros with 0.5*LOD (LOD is currently a dummy value)
+            measure_data.loc[measure_data["value"] < 300.0] = 150.0
         elif units == "gcMl":
             measure_data.loc[measure_data["unit"] == "gcL", "value"] = measure_data["value"]/1000.0
+            # Replace zeros with 0.5*LOD (LOD is currently a dummy value)
+            measure_data.loc[measure_data["value"] < 0.3] = 0.15
         else:
             raise ValueError("Invalid units \"{}\" given for wastewater measure.".format(units))
 
@@ -110,3 +125,28 @@ class SiteData():
 
         # Return the data
         return measure_data[["sampleDate", "value"]]
+
+    def get_spline_model(self, gene_1, gene_2, units="gcL"):
+        """Return a spline model of the log standardized date, acceptng a datetime date as an argument"""
+        # Get the log transformed standardized data
+        measure_data = self.get_log_standardized_data(gene_1, gene_2, units)
+
+        # Get the start/end dates of the model
+        start_date = measure_data["sampleDate"].min()
+        end_date = measure_data["sampleDate"].max()
+        duration = delta_days(end_date, start_date)
+
+        # Define the knots in the spline
+        knots = np.arange(10, duration, 10)
+
+        # Convert the date to a float value
+        measure_data["sampleDate"] = measure_data["sampleDate"].apply(delta_days, args=(start_date,))
+
+        # Sort by date
+        measure_data = measure_data.sort_values(by=["sampleDate"])
+
+        # Fit the spline model
+        spline = LSQUnivariateSpline(measure_data["sampleDate"].to_numpy(), measure_data["value"].to_numpy(), knots)
+
+        # Return the spline model
+        return lambda x : spline_model(x, start_date, spline)
