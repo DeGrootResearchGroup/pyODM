@@ -39,12 +39,21 @@ class AggregateModel():
         return pd.DataFrame({"sampleDate" : dates, "value": values})
 
     def get_multisite_splines(self, sites, gene_1, gene_2, start_date, end_date, units="gcL"):
-        """Function to generate a weighted spline curve for multiple sites"""
+        """Function to generate spline curves for multiple sites"""
         splines = self.get_site_spline(sites[0], gene_1, gene_2, start_date, end_date, units)
         splines = splines.rename(columns={"value" : "value_{}".format(sites[0])})
         for site in sites[1:]:
             spline = self.get_site_spline(site, gene_1, gene_2, start_date, end_date, units)
             splines = splines.merge(spline, how="left", on="sampleDate")
             splines = splines.rename(columns={"value" : "value_{}".format(site)})
-
         return splines
+
+    def get_aggregate_model(self, sites, gene_1, gene_2, start_date, end_date, units="gcL"):
+        """Function to generate a weighted aggregate model for multiple sites"""
+        splines = self.get_multisite_splines(sites, gene_1, gene_2, start_date, end_date, units)
+        columns = []
+        for site in sites:
+            columns.append("value_{}".format(site))
+            splines[columns[-1]] = splines[columns[-1]]*self._weights[site]
+        splines["value"] = splines[columns].sum(axis=1)
+        return splines[["sampleDate", "value"]]
