@@ -1,9 +1,16 @@
+"""Module for representing a PHES-ODM formatted database.
+
+The Public Health Environmental Surveillance Open Data Model (PHES-ODM) is
+an open data model that is commonly used for wastewater-based surveillance.
+The data model is described here: https://github.com/Big-Life-Lab/PHES-ODM.
+"""
+
 import pandas as pd
 from datetime import datetime
 import warnings
 
 class Sheets():
-    """Class with static variables for the sheet names"""
+    """Class with static variables for the sheet names."""
     site = "1 - Site"
     reporter = "2 - Reporter"
     lab = "3 - Lab"
@@ -14,11 +21,25 @@ class Sheets():
     site_measure = "8 - SiteMeasure"
 
 class ODM():
-    """Class used to represent Open Data Model file as pandas dataframes"""
+    """Class used to represent an Open Data Model file as a set of pandas
+    DataFrames.
+
+    Parameters
+    ----------
+    data_file : str
+        Name of the Excel file containing the ODM-formatted data.
+
+    Notes
+    -----
+    The data sheets in the ODM file are retained in unmodified form, with
+    the exception of the "Sample" data sheet which has a column ``sampleDate``
+    added. The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd``
+    which are used for grab and composite samples, respectively.
+    """
 
     def __init__(self, data_file):
         """Class initialization"""
-        # Read all of the sheets
+        # Read all of the sheets from the Excel file
         self._sheets = {
             Sheets.site : self.read_sheet(data_file, Sheets.site),
             Sheets.reporter : self.read_sheet(data_file, Sheets.reporter),
@@ -29,25 +50,46 @@ class ODM():
             Sheets.ww_measure : self.read_sheet(data_file, Sheets.ww_measure),
             Sheets.site_measure : self.read_sheet(data_file, Sheets.site_measure)
         }
+        # Add a "sampleDate" column, which is either the date of the grab sample
+        # or the end date of a composite
+        self._sheets[Sheets.sample]["sampleDate"] = pd.to_datetime(self._sheets[Sheets.sample]["dateTimeEnd"].fillna(self._sheets[Sheets.sample]["dateTime"])).dt.date
 
     def read_sheet(self, file_name, sheet_name):
-        """Function to read an excel sheet"""
+        """Read a sheet from an Excel file.
+
+        Parameters
+        ----------
+        file_name : str
+            Name of the Excel file.
+        sheet_name : str
+            Name of the sheet to be read.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The data contained in the specified Excel sheet.
+        """
         # Ignore warnings about Excel data validation
         warnings.simplefilter(action='ignore', category=UserWarning)
         return pd.read_excel(file_name, sheet_name=sheet_name)
 
     def filter_dates(self, start_date=None, end_date=None):
-        """Function to filter the data by date
-            Notes:
-                - The dates are strings in the format "YYYY-MM-DD"
+        """Filter the data by sample date.
+
+        Data before start_date and after end_date will be deleted from all
+        DataFrames. Data falling exactly on these dates will be retained.
+
+        Parameters
+        ----------
+        start_date : str, optional
+            Start date in the format "YYYY-MM-DD"
+        end_date : str, optional
+            End date in the format "YYYY-MM-DD"
         """
         # Get a dataframe with the sample IDs and the time information
-        samples = self._sheets[Sheets.sample][["sampleID", "dateTime", "dateTimeEnd"]].copy()
+        samples = self.sample[["sampleID", "sampleDate"]].copy()
 
-        # Add "sampleDate" which is either the date of the grab sample or the end date of a composite
-        samples["sampleDate"] = pd.to_datetime(samples["dateTimeEnd"].fillna(samples["dateTime"])).dt.date
-
-        # Filter the data that meet the date criteria
+        # Find samples that meet date criteria
         if start_date:
             start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
             samples = samples[samples["sampleDate"] >= start_date]
@@ -56,46 +98,102 @@ class ODM():
             samples = samples[samples["sampleDate"] <= end_date]
 
         # Filter the data that is date-based
-        self._sheets[Sheets.sample] = self._sheets[Sheets.sample].loc[self._sheets[Sheets.sample]["sampleID"].isin(samples["sampleID"])]
-        self._sheets[Sheets.ww_measure] = self._sheets[Sheets.ww_measure].loc[self._sheets[Sheets.ww_measure]["sampleID"].isin(samples["sampleID"])]
-        self._sheets[Sheets.site_measure] = self._sheets[Sheets.site_measure].loc[self._sheets[Sheets.site_measure]["sampleID"].isin(samples["sampleID"])]
+        self._sheets[Sheets.sample] = self.sample.loc[self.sample["sampleID"].isin(samples["sampleID"])]
+        self._sheets[Sheets.ww_measure] = self.ww_measure.loc[self.ww_measure["sampleID"].isin(samples["sampleID"])]
+        self._sheets[Sheets.site_measure] = self.site_measure.loc[self.site_measure["sampleID"].isin(samples["sampleID"])]
 
     @property
     def site(self):
-        """Function to get the site data frame"""
+        """Get the site data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "Site" data, which contains information about the sites being
+            samples.
+        """
         return self._sheets[Sheets.site]
 
     @property
     def reporter(self):
-        """Function to get the reporter data frame"""
+        """Get the reporter data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "Reporter" data, which contains information about the people
+            reporting the data.
+        """
         return self._sheets[Sheets.reporter]
 
     @property
     def lab(self):
-        """Function to get the lab frame"""
+        """Get the lab frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "Lab" data, which contains information about the reporting
+            lab(s).
+        """
         return self._sheets[Sheets.lab]
 
     @property
     def instrument(self):
-        """Function to get the instrument data frame"""
+        """Get the instrument data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "Instrument" data, which contains information about the
+            instrument being used to collect the data.
+        """
         return self._sheets[Sheets.instrument]
 
     @property
     def assay_method(self):
-        """Function to get the assay method data frame"""
+        """Get the assay method data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "AssayMethod" data, which contains information about the
+            assay method(s) being used to collect the data.
+        """
         return self._sheets[Sheets.assay_method]
 
     @property
     def sample(self):
-        """Function to get the sample data frame"""
+        """Get the sample data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "Sample" data, which contains information about the samples
+            collected.
+        """
         return self._sheets[Sheets.sample]
 
     @property
     def ww_measure(self):
-        """Function to get the ww measure data frame"""
+        """Get the ww measure data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "WWMeasure" data, which contains the wastewater measurements
+            made on the samples collected.
+        """
         return self._sheets[Sheets.ww_measure]
 
     @property
     def site_measure(self):
-        """Function to get the site measure data frame"""
+        """Get the site measure data frame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The "SiteMeasure" data, which contains additional measurements
+            made relating to the collection site.
+        """
         return self._sheets[Sheets.site_measure]
