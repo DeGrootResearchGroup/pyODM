@@ -33,7 +33,6 @@ class AggregateModel():
         date : str
             Date in the format YYYY-MM-DD.
 
-
         Returns
         -------
         datetime.date
@@ -52,7 +51,6 @@ class AggregateModel():
             Start date of date list.
         end_date : str
             End date of date list.
-
 
         Returns
         -------
@@ -174,17 +172,32 @@ class AggregateModel():
         pandas.DataFrame
             Time series of the modelled site data. The dates are in the column
             labelled "sampleDate" and the values, representing a weighted
-            average of the site models, are in the column labelled "value".
+            average of the site models, are in the column labelled "value". The
+            ratio of the sum of weighting factors for the represented data
+            to the total weighting for all sites is in the column "ratio".
         """
+        # Get the spline models for each site
         splines = self.get_multisite_splines(sites, gene_1, gene_2, start_date, end_date, units)
+
+        # Store the names of the columns for the site spline models and weights
         spline_columns = []
         weight_columns = []
+
         for site in sites:
+            # Add to column names for this site
             spline_columns.append("value_{}".format(site))
             weight_columns.append("weight_{}".format(site))
+            # Multiply model data by weighting factor
             splines[spline_columns[-1]] = splines[spline_columns[-1]]*self._weights[site]
             # Set the weights, where the weight is zero if the value is NaN
             splines[weight_columns[-1]] = self._weights[site]
             splines.loc[splines[spline_columns[-1]].isna(), weight_columns[-1]] = 0.0
+
+        # Divide by sum of weights
         splines["value"] = splines[spline_columns].sum(axis=1)/splines[weight_columns].sum(axis=1)
-        return splines[["sampleDate", "value"]]
+
+        # Caclulate ratio of weights of valid data to total weight
+        weight_sum = sum(self._weights[site] for site in sites)
+        splines["ratio"] = splines[weight_columns].sum(axis=1)/weight_sum
+
+        return splines[["sampleDate", "value", "ratio"]]
