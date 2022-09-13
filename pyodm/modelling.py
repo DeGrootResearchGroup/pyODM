@@ -1,13 +1,25 @@
+"""Module for performing modelling on data represented by an ODM object.
+"""
+
 import datetime
 import numpy as np
 import pandas as pd
 
 class AggregateModel():
-    """Class representing an aggregate model for multipe sampling sites"""
+    """Class representing an aggregate model for multipe sampling sites.
+
+    Parameters
+    ----------
+    data : pyodm.ODM
+        The data set to be modelled.
+    weights : dict
+        The weighting factors for each sampling site (often the population).
+        The keys of the dict are the names of the sampling sites used in the ODM
+        database and the values are the weights.
+    """
 
     def __init__(self, data, weights):
         """Class initialization"""
-        # Store the inputs
         self._data = data
         self._weights = weights
 
@@ -17,11 +29,39 @@ class AggregateModel():
             self._weights[key] = self._weights[key]/total_weight
 
     def str_to_datetime(self, date):
-        """Function to convert a string of the form YYYY-MM-DD to a datetime object"""
+        """Convert a string of the form YYYY-MM-DD to a datetime object.
+
+        Parameters
+        ----------
+        date : str
+            Date in the format YYYY-MM-DD.
+
+
+        Returns
+        -------
+        datetime.date
+            Date as a datetime.date object.
+        """
         return datetime.datetime.strptime(date, "%Y-%m-%d").date()
 
     def get_date_list(self, start_date, end_date):
-        """Function to return a list of dates based on start and end dates"""
+        """Get a list of dates (spaced daily) based on start and end dates.
+
+        The list will include the start and end dates.
+
+        Parameters
+        ----------
+        start_date : str
+            Start date of date list.
+        end_date : str
+            End date of date list.
+
+
+        Returns
+        -------
+        list of datetime.date
+            A list of dates, evenly spaced at 1-day intervals.
+        """
         start_date = self.str_to_datetime(start_date)
         end_date = self.str_to_datetime(end_date)
 
@@ -32,14 +72,60 @@ class AggregateModel():
         return dates
 
     def get_site_spline(self, site, gene_1, gene_2, start_date, end_date, units="gcL"):
-        """Function to generate a spline curve for a given site"""
+        """Get a spline curve for a given site.
+
+        Parameters
+        ----------
+        site : str
+            Site name.
+        gene_1 : str
+            Gene target for quantification (naming as per ODM format).
+        gene_2 : str
+            Gene used for normalization of gene_1 (naming as per ODM format).
+        start_date : str
+            Start date of model.
+        end_date : str
+            End date of model.
+        units : str, optional
+            Units for quantification of gene_1 and gene_2.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Time series of the modelled site data. The dates are in the column
+            labelled "sampleDate" and the values are in the column labelled
+            "value".
+        """
         model = self._data[site].get_spline_model(gene_1, gene_2, units)
         dates = self.get_date_list(start_date, end_date)
         values = [float(model(date)) for date in dates]
         return pd.DataFrame({"sampleDate" : dates, "value": values})
 
     def get_multisite_splines(self, sites, gene_1, gene_2, start_date, end_date, units="gcL"):
-        """Function to generate spline curves for multiple sites"""
+        """Get spline curves for multiple sites.
+
+        Parameters
+        ----------
+        sites : list of str
+            Site names.
+        gene_1 : str
+            Gene target for quantification (naming as per ODM format).
+        gene_2 : str
+            Gene used for normalization of gene_1 (naming as per ODM format).
+        start_date : str
+            Start date of model.
+        end_date : str
+            End date of model.
+        units : str, optional
+            Units for quantification of gene_1 and gene_2.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Time series of the modelled site data. The dates are in the column
+            labelled "sampleDate" and the values are in the columns labelled
+            "value_X", where X represents the site name.
+        """
         splines = self.get_site_spline(sites[0], gene_1, gene_2, start_date, end_date, units)
         splines = splines.rename(columns={"value" : "value_{}".format(sites[0])})
         for site in sites[1:]:
@@ -49,7 +135,30 @@ class AggregateModel():
         return splines
 
     def get_aggregate_model(self, sites, gene_1, gene_2, start_date, end_date, units="gcL"):
-        """Function to generate a weighted aggregate model for multiple sites"""
+        """Get a weighted aggregate model for multiple sites.
+
+        Parameters
+        ----------
+        sites : list of str
+            Site names.
+        gene_1 : str
+            Gene target for quantification (naming as per ODM format).
+        gene_2 : str
+            Gene used for normalization of gene_1 (naming as per ODM format).
+        start_date : str
+            Start date of model.
+        end_date : str
+            End date of model.
+        units : str, optional
+            Units for quantification of gene_1 and gene_2.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Time series of the modelled site data. The dates are in the column
+            labelled "sampleDate" and the values, representing a weighted
+            average of the site models, are in the column labelled "value".
+        """
         splines = self.get_multisite_splines(sites, gene_1, gene_2, start_date, end_date, units)
         columns = []
         for site in sites:
