@@ -25,11 +25,6 @@ class AggregateModel():
         self._data = data
         self._weights = weights
 
-        # Normalize the weights
-        total_weight = sum(self._weights.values())
-        for key in self._weights.keys():
-            self._weights[key] = self._weights[key]/total_weight
-
     def str_to_datetime(self, date):
         """Convert a string of the form YYYY-MM-DD to a datetime object.
 
@@ -76,6 +71,9 @@ class AggregateModel():
     def get_site_spline(self, site, gene_1, gene_2, start_date, end_date, units="gcL"):
         """Get a spline curve for a given site.
 
+        For dates that are beyond the range of the dataset, a value of NaN
+        is inserted.
+
         Parameters
         ----------
         site : str
@@ -115,11 +113,13 @@ class AggregateModel():
                 values[i] = None
 
         # Return the data
-        print(pd.DataFrame({"sampleDate" : dates, "value": values}))
         return pd.DataFrame({"sampleDate" : dates, "value": values})
 
     def get_multisite_splines(self, sites, gene_1, gene_2, start_date, end_date, units="gcL"):
         """Get spline curves for multiple sites.
+
+        For dates that are beyond the range of the dataset, a value of NaN
+        is inserted.
 
         Parameters
         ----------
@@ -177,9 +177,14 @@ class AggregateModel():
             average of the site models, are in the column labelled "value".
         """
         splines = self.get_multisite_splines(sites, gene_1, gene_2, start_date, end_date, units)
-        columns = []
+        spline_columns = []
+        weight_columns = []
         for site in sites:
-            columns.append("value_{}".format(site))
-            splines[columns[-1]] = splines[columns[-1]]*self._weights[site]
-        splines["value"] = splines[columns].sum(axis=1)
+            spline_columns.append("value_{}".format(site))
+            weight_columns.append("weight_{}".format(site))
+            splines[spline_columns[-1]] = splines[spline_columns[-1]]*self._weights[site]
+            # Set the weights, where the weight is zero if the value is NaN
+            splines[weight_columns[-1]] = self._weights[site]
+            splines.loc[splines[spline_columns[-1]].isna(), weight_columns[-1]] = 0.0
+        splines["value"] = splines[spline_columns].sum(axis=1)/splines[weight_columns].sum(axis=1)
         return splines[["sampleDate", "value"]]
