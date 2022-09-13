@@ -1,4 +1,4 @@
-"""Module for performing modelling on data represented by an ODM object.
+"""Module for performing modelling on data represented by SiteData objects.
 """
 
 import datetime
@@ -10,8 +10,10 @@ class AggregateModel():
 
     Parameters
     ----------
-    data : pyodm.ODM
-        The data set to be modelled.
+    data : dict
+        The site data to be modelled. The keys of the dict are the names of the
+        sampling sites used in the ODM database and the values are SiteData
+        objects representing that site.
     weights : dict
         The weighting factors for each sampling site (often the population).
         The keys of the dict are the names of the sampling sites used in the ODM
@@ -96,9 +98,24 @@ class AggregateModel():
             labelled "sampleDate" and the values are in the column labelled
             "value".
         """
+        # Get the model for all dates requested even if out of range
         model = self._data[site].get_spline_model(gene_1, gene_2, units)
         dates = self.get_date_list(start_date, end_date)
         values = [float(model(date)) for date in dates]
+
+        # Get the date limits for the actual data
+        min_date = self._data[site].sample_data["sampleDate"].min()
+        max_date = self._data[site].sample_data["sampleDate"].max()
+
+        # Fill out of range dates with None
+        for i, date in enumerate(dates):
+            if date < min_date:
+                values[i] = None
+            if date > max_date:
+                values[i] = None
+
+        # Return the data
+        print(pd.DataFrame({"sampleDate" : dates, "value": values}))
         return pd.DataFrame({"sampleDate" : dates, "value": values})
 
     def get_multisite_splines(self, sites, gene_1, gene_2, start_date, end_date, units="gcL"):
