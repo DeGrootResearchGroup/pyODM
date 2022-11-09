@@ -6,7 +6,7 @@ The data model is described here: https://github.com/Big-Life-Lab/PHES-ODM.
 """
 
 import pandas as pd
-from datetime import datetime
+import os
 import warnings
 
 class Sheets():
@@ -20,6 +20,17 @@ class Sheets():
     ww_measure = "7 - WWMeasure"
     site_measure = "8 - SiteMeasure"
 
+class CSVs():
+    """Class with static variables for the CSV file names."""
+    site = "Site.csv"
+    reporter = "Reporter.csv"
+    lab = "Lab.csv"
+    instrument = "Instrument.csv"
+    assay_method = "AssayMethod.csv"
+    sample = "Sample.csv"
+    ww_measure = "WWMeasure.csv"
+    site_measure = "SiteMeasure.csv"
+
 class ODM():
     """Class used to represent an Open Data Model file as a set of pandas
     DataFrames.
@@ -27,34 +38,53 @@ class ODM():
     Parameters
     ----------
     data_file : str
-        Name of the Excel file containing the ODM-formatted data.
+        Name of directory containing CSV files or 
+        Name of the Excel file containing the ODM-formatted data 
 
     Notes
     -----
-    The data sheets in the ODM file are retained in unmodified form, with
-    the exception of the "Sample" data sheet which has a column ``sampleDate``
-    added. The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd``
-    which are used for grab and composite samples, respectively.
+    The individual datasets are retained in unmodified form, with the exception of 
+    ``Sheet 6 - Sample`` or ``Sample.csv`` which has a column ``sampleDate`` added. 
+    The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd`` which 
+    are used for grab and composite samples, respectively.
     """
-
-    def __init__(self, data_file):
+    def __init__(self,data_file):
         """Class initialization"""
-        # Read all of the sheets from the Excel file
-        self._sheets = {
-            Sheets.site : self.read_sheet(data_file, Sheets.site),
-            Sheets.reporter : self.read_sheet(data_file, Sheets.reporter),
-            Sheets.lab : self.read_sheet(data_file, Sheets.lab),
-            Sheets.instrument : self.read_sheet(data_file, Sheets.instrument),
-            Sheets.assay_method : self.read_sheet(data_file, Sheets.assay_method),
-            Sheets.sample : self.read_sheet(data_file, Sheets.sample),
-            Sheets.ww_measure : self.read_sheet(data_file, Sheets.ww_measure),
-            Sheets.site_measure : self.read_sheet(data_file, Sheets.site_measure)
-        }
+        self._data = {}
+        
+        # Try - read CSVs from directory
+        try:
+            os.listdir(data_file)
+            for csv_file_name in [attributes for attributes in dir(CSVs) if not attributes.startswith('__')]:
+                self._data[csv_file_name] = self.read_csv(os.path.join(data_file,getattr(CSVs,csv_file_name)))
+        
+        # Exception - read sheets from Excel file
+        except NotADirectoryError:
+            with open(data_file,'r'):
+                for sheet_name in [attributes for attributes in dir(Sheets) if not attributes.startswith('__')]:
+                    self._data[sheet_name] = self.read_sheet(data_file,getattr(Sheets,sheet_name))
+
         # Add a "sampleDate" column, which is either the date of the grab sample
         # or the end date of a composite
-        self._sheets[Sheets.sample]["sampleDate"] = pd.to_datetime(self._sheets[Sheets.sample]["dateTimeEnd"].fillna(self._sheets[Sheets.sample]["dateTime"])).dt.date
+        self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
+    
+    def read_csv(self,file_name):
+        """Read a csv file.
 
-    def read_sheet(self, file_name, sheet_name):
+        Parameters
+        ----------
+        file_name : str
+            Name of the CSV file.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The data contained in the specified CSV file.
+        """
+        warnings.simplefilter(action='ignore', category=UserWarning)
+        return pd.read_csv(file_name)
+
+    def read_sheet(self,file_name,sheet_name):
         """Read a sheet from an Excel file.
 
         Parameters
@@ -69,9 +99,43 @@ class ODM():
         pandas.DataFrame
             The data contained in the specified Excel sheet.
         """
-        # Ignore warnings about Excel data validation
         warnings.simplefilter(action='ignore', category=UserWarning)
-        return pd.read_excel(file_name, sheet_name=sheet_name)
+        return pd.read_excel(file_name,sheet_name)
+
+    def export_csvs(self,dir_path):
+        """Export ODM formated dataset into directory as CSV files.
+
+        Parameters
+        ----------
+        dir_path : str
+            Name of the directory.
+        """
+
+        try:
+            os.listdir(dir_path)
+        except FileNotFoundError:
+            os.mkdir(dir_path)
+        for k in CSVs.keys():
+            df = self._data[k]
+            df.set_index(df.columns[0],inplace=True)
+            df.to_csv(os.path.join(dir_path,CSVs[k]))
+
+    def export_sheets(self,file_name):
+        """Export ODM formated dataset into Excel sheets.
+
+        Parameters
+        ----------
+        file_name : str
+            Name of the Excel file.
+        """
+
+        with pd.ExcelWriter(file_name) as excel_writer:
+            for k in Sheets.keys():
+                df = self._data[k]
+                print(df.columns)
+                df.set_index(df.columns[0],inplace=True)
+                df.to_excel(excel_writer,sheet_name=Sheets[k])
+
 
     def filter_dates(self, start_date=None, end_date=None):
         """Filter the data by sample date.
@@ -98,9 +162,10 @@ class ODM():
             samples = samples[samples["sampleDate"] <= end_date]
 
         # Filter the data that is date-based
-        self._sheets[Sheets.sample] = self.sample.loc[self.sample["sampleID"].isin(samples["sampleID"])]
-        self._sheets[Sheets.ww_measure] = self.ww_measure.loc[self.ww_measure["sampleID"].isin(samples["sampleID"])]
-        self._sheets[Sheets.site_measure] = self.site_measure.loc[self.site_measure["sampleID"].isin(samples["sampleID"])]
+        self._data['sample'] = self.sample.loc[self.sample["sampleID"].isin(samples["sampleID"])]
+        self._data['ww_measure'] = self.ww_measure.loc[self.ww_measure["sampleID"].isin(samples["sampleID"])]
+        self._data['site_measure'] = self.site_measure.loc[self.site_measure["sampleID"].isin(samples["sampleID"])]
+
 
     @property
     def site(self):
@@ -112,7 +177,7 @@ class ODM():
             The "Site" data, which contains information about the sites being
             samples.
         """
-        return self._sheets[Sheets.site]
+        return self._data['site']
 
     @property
     def reporter(self):
@@ -124,7 +189,7 @@ class ODM():
             The "Reporter" data, which contains information about the people
             reporting the data.
         """
-        return self._sheets[Sheets.reporter]
+        return self._data['reporter']
 
     @property
     def lab(self):
@@ -136,7 +201,7 @@ class ODM():
             The "Lab" data, which contains information about the reporting
             lab(s).
         """
-        return self._sheets[Sheets.lab]
+        return self._data['lab']
 
     @property
     def instrument(self):
@@ -148,7 +213,7 @@ class ODM():
             The "Instrument" data, which contains information about the
             instrument being used to collect the data.
         """
-        return self._sheets[Sheets.instrument]
+        return self._data['instrument']
 
     @property
     def assay_method(self):
@@ -160,7 +225,7 @@ class ODM():
             The "AssayMethod" data, which contains information about the
             assay method(s) being used to collect the data.
         """
-        return self._sheets[Sheets.assay_method]
+        return self._data['assay_method']
 
     @property
     def sample(self):
@@ -172,7 +237,7 @@ class ODM():
             The "Sample" data, which contains information about the samples
             collected.
         """
-        return self._sheets[Sheets.sample]
+        return self._data['sample']
 
     @property
     def ww_measure(self):
@@ -184,7 +249,7 @@ class ODM():
             The "WWMeasure" data, which contains the wastewater measurements
             made on the samples collected.
         """
-        return self._sheets[Sheets.ww_measure]
+        return self._data['ww_measure']
 
     @property
     def site_measure(self):
@@ -196,4 +261,4 @@ class ODM():
             The "SiteMeasure" data, which contains additional measurements
             made relating to the collection site.
         """
-        return self._sheets[Sheets.site_measure]
+        return self._data['site_measure']

@@ -1,2 +1,8 @@
 *.pyc
 .ipynb_checkpoints/
+ODMVENV
+build/
+dist/
+pyODM.egg-info/
+**/.DS_Store
+

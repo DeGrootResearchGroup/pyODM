@@ -1,0 +1,12 @@
+tableName,variableName,variableLabel_en,variableLabel_fr,foreignKeyTable,variableType,variableDesc_en,variableDesc_fr
+WWMeasure,fractionAnalyzed,Fraction analyzed,Fraction analysée,WWMeasure,category,Fraction of the sample that is analyzed.,Fraction de l'échantillon employée pour la mesure.
+WWMeasure,type,Type,Type,WWMeasure,category,The variable that is being measured on the sample e.g. a SARS-CoV-2 gene target region (cov) a biomarker for normalisation (n) or a water quality parameter (wq).,Le paramétre mesuré avec cette analyse. Exemples: Une région de gène cible (cov) un biomarqueur (n) ou un indicateur de la qualité de l'eau (wq)
+WWMeasure,unit,Unit,Unité,WWMeasure,category,Unit of the measurement.,Unité de mesure.
+WWMeasure,aggregation,Aggregation,Agrégation,WWMeasure,category,Statistical measures used to report the sample units of Ct/Cq unless otherwise stated. Each aggregation has a corresponding value.,Indicateur statistique utilisée pour rapporter la mesure effectuée. Chaque agrégation doit étre reportée comme une mesure différente (avec un identifiant différent)
+Site,type,Type,Type,Site,category,Type of site or institution where sample was taken.,Type de site ou d'institution du site d'échantillonnage.
+Site,sampleTypeDefault,Sample type default,Type d'échantillon par défaut,Site,category,Used as default when a new sample is created for this site. See type in Sample table.,Type d'échantilon utilisé par défaut quand un nouvel échantillon est créé pour ce site. Se référer à la colonne "type" dans la table "Sample"
+Site,sampleCollectionDefault,Sample collection default,Prélèvement d'échantillons par défaut,Site,category,Used as default when a new sample is created for this site. See collection in Sample table.,Méthode d'échantillonnage par défaut quand un nouvel échantillon est créé pour ce site. Se référer é la colonne "collection" dans la table "Sample"
+SiteMeasure,type,Type,Type,SiteMeasure,category,The type of measurement that was performed. The prefix env is used for environmental variables whereas ww indicates a measurement on wastewater.,Type de mesure réalisée. Le préfixe "env" est utilisé pour une variable environnementale alors que "ww" indique une mesure réalisée sur les eaux usées.
+SiteMeasure,unit,Unit,Unité,SiteMeasure,category,The engineering unit of the measurement.,L'unité de mesure
+Instrument,type,Type,Type,Instrument,category,Type of instrument used to perform the measurement.,Type de l'instrument de mesure.
+Polygon,type,Type,Type,Polygon,category,Type of polygon.,Type de polygone.
