@@ -20,6 +20,17 @@ class Sheets():
     ww_measure = "7 - WWMeasure"
     site_measure = "8 - SiteMeasure"
 
+    def attributes():
+        """Return list of class attributes.
+
+        Returns
+        -------
+        list
+            List of attribute names.
+        """
+        return ['site', 'reporter', 'lab', 'instrument', 'assay_method',
+            'sample', 'ww_measure', 'site_measure']
+
 class CSVs():
     """Class with static variables for the CSV file names."""
     site = "Site.csv"
@@ -31,6 +42,17 @@ class CSVs():
     ww_measure = "WWMeasure.csv"
     site_measure = "SiteMeasure.csv"
 
+    def attributes():
+        """Return list of class attributes.
+
+        Returns
+        -------
+        list
+            List of attribute names.
+        """
+        return ['site', 'reporter', 'lab', 'instrument', 'assay_method',
+            'sample', 'ww_measure', 'site_measure']
+
 class ODM():
     """Class used to represent an Open Data Model file as a set of pandas
     DataFrames.
@@ -38,37 +60,37 @@ class ODM():
     Parameters
     ----------
     data_file : str
-        Name of directory containing CSV files or 
-        Name of the Excel file containing the ODM-formatted data 
+        Name of directory containing CSV files or
+        Name of the Excel file containing the ODM-formatted data
 
     Notes
     -----
-    The individual datasets are retained in unmodified form, with the exception of 
-    ``Sheet 6 - Sample`` or ``Sample.csv`` which has a column ``sampleDate`` added. 
-    The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd`` which 
+    The individual datasets are retained in unmodified form, with the exception of
+    ``Sheet 6 - Sample`` or ``Sample.csv`` which has a column ``sampleDate`` added.
+    The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd`` which
     are used for grab and composite samples, respectively.
     """
-    def __init__(self,data_file):
+    def __init__(self, data_file):
         """Class initialization"""
         self._data = {}
-        
+
         # Try - read CSVs from directory
         try:
             os.listdir(data_file)
-            for csv_file_name in [attributes for attributes in dir(CSVs) if not attributes.startswith('__')]:
-                self._data[csv_file_name] = self.read_csv(os.path.join(data_file,getattr(CSVs,csv_file_name)))
-        
+            for attr in CSVs.attributes():
+                self._data[attr] = self.read_csv(os.path.join(data_file, getattr(CSVs, attr)))
+
         # Exception - read sheets from Excel file
         except NotADirectoryError:
-            with open(data_file,'r'):
-                for sheet_name in [attributes for attributes in dir(Sheets) if not attributes.startswith('__')]:
-                    self._data[sheet_name] = self.read_sheet(data_file,getattr(Sheets,sheet_name))
+            with open(data_file, 'r'):
+                for attr in Sheets.attributes():
+                    self._data[attr] = self.read_sheet(data_file, getattr(Sheets, attr))
 
         # Add a "sampleDate" column, which is either the date of the grab sample
         # or the end date of a composite
         self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
-    
-    def read_csv(self,file_name):
+
+    def read_csv(self, file_name):
         """Read a csv file.
 
         Parameters
@@ -84,7 +106,7 @@ class ODM():
         warnings.simplefilter(action='ignore', category=UserWarning)
         return pd.read_csv(file_name)
 
-    def read_sheet(self,file_name,sheet_name):
+    def read_sheet(self, file_name, sheet_name):
         """Read a sheet from an Excel file.
 
         Parameters
@@ -100,7 +122,7 @@ class ODM():
             The data contained in the specified Excel sheet.
         """
         warnings.simplefilter(action='ignore', category=UserWarning)
-        return pd.read_excel(file_name,sheet_name)
+        return pd.read_excel(file_name, sheet_name)
 
     def export_csvs(self,dir_path):
         """Export ODM formated dataset into directory as CSV files.
@@ -110,17 +132,16 @@ class ODM():
         dir_path : str
             Name of the directory.
         """
-
         try:
             os.listdir(dir_path)
         except FileNotFoundError:
             os.mkdir(dir_path)
-        for k in CSVs.keys():
-            df = self._data[k]
-            df.set_index(df.columns[0],inplace=True)
-            df.to_csv(os.path.join(dir_path,CSVs[k]))
+        for attr in CSVs.attributes():
+            df = self._data[attr]
+            df.set_index(df.columns[0], inplace=True)
+            df.to_csv(os.path.join(dir_path, getattr(CSVs, attr)))
 
-    def export_sheets(self,file_name):
+    def export_excel(self, file_name):
         """Export ODM formated dataset into Excel sheets.
 
         Parameters
@@ -128,14 +149,11 @@ class ODM():
         file_name : str
             Name of the Excel file.
         """
-
         with pd.ExcelWriter(file_name) as excel_writer:
-            for k in Sheets.keys():
-                df = self._data[k]
-                print(df.columns)
-                df.set_index(df.columns[0],inplace=True)
-                df.to_excel(excel_writer,sheet_name=Sheets[k])
-
+            for attr in Sheets.attributes():
+                df = self._data[attr]
+                df.set_index(df.columns[0], inplace=True)
+                df.to_excel(excel_writer, sheet_name=getattr(Sheets, attr))
 
     def filter_dates(self, start_date=None, end_date=None):
         """Filter the data by sample date.
@@ -165,7 +183,6 @@ class ODM():
         self._data['sample'] = self.sample.loc[self.sample["sampleID"].isin(samples["sampleID"])]
         self._data['ww_measure'] = self.ww_measure.loc[self.ww_measure["sampleID"].isin(samples["sampleID"])]
         self._data['site_measure'] = self.site_measure.loc[self.site_measure["sampleID"].isin(samples["sampleID"])]
-
 
     @property
     def site(self):

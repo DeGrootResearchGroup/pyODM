@@ -9,7 +9,6 @@ odm.filter_dates()
 odm.export_csvs('output_directory')
 
 
-
-
-
-
+odm = ODM(CSV_DIR)
+odm.filter_dates()
+odm.export_excel(os.path.join('output_directory', 'sheets.xlsx'))
