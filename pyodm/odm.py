@@ -9,7 +9,24 @@ import pandas as pd
 import os
 import warnings
 
-class Sheets():
+
+class OdmTables():
+    """Class defining properties of the ODM tables."""
+
+    @staticmethod
+    def attributes():
+        """Return list of class attributes.
+
+        Returns
+        -------
+        list
+            List of attribute names.
+        """
+        return ['site', 'reporter', 'lab', 'instrument', 'assay_method',
+            'sample', 'ww_measure', 'site_measure']
+
+
+class Sheets(OdmTables):
     """Class with static variables for the sheet names."""
     site = "1 - Site"
     reporter = "2 - Reporter"
@@ -20,18 +37,8 @@ class Sheets():
     ww_measure = "7 - WWMeasure"
     site_measure = "8 - SiteMeasure"
 
-    def attributes():
-        """Return list of class attributes.
 
-        Returns
-        -------
-        list
-            List of attribute names.
-        """
-        return ['site', 'reporter', 'lab', 'instrument', 'assay_method',
-            'sample', 'ww_measure', 'site_measure']
-
-class CSVs():
+class CSVs(OdmTables):
     """Class with static variables for the CSV file names."""
     site = "Site.csv"
     reporter = "Reporter.csv"
@@ -42,16 +49,6 @@ class CSVs():
     ww_measure = "WWMeasure.csv"
     site_measure = "SiteMeasure.csv"
 
-    def attributes():
-        """Return list of class attributes.
-
-        Returns
-        -------
-        list
-            List of attribute names.
-        """
-        return ['site', 'reporter', 'lab', 'instrument', 'assay_method',
-            'sample', 'ww_measure', 'site_measure']
 
 class ODM():
     """Class used to represent an Open Data Model file as a set of pandas
@@ -70,25 +67,30 @@ class ODM():
     The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd`` which
     are used for grab and composite samples, respectively.
     """
-    def __init__(self, data_file):
+    def __init__(self, data_file=None):
         """Class initialization"""
         self._data = {}
 
-        # Try - read CSVs from directory
-        try:
-            os.listdir(data_file)
-            for attr in CSVs.attributes():
-                self._data[attr] = self.read_csv(os.path.join(data_file, getattr(CSVs, attr)))
+        if data_file:
+            # Try - read CSVs from directory
+            try:
+                os.listdir(data_file)
+                for attr in OdmTables.attributes():
+                    self._data[attr] = self.read_csv(os.path.join(data_file, getattr(CSVs, attr)))
 
-        # Exception - read sheets from Excel file
-        except NotADirectoryError:
-            with open(data_file, 'r'):
-                for attr in Sheets.attributes():
-                    self._data[attr] = self.read_sheet(data_file, getattr(Sheets, attr))
+            # Exception - read sheets from Excel file
+            except NotADirectoryError:
+                with open(data_file, 'r'):
+                    for attr in OdmTables.attributes():
+                        self._data[attr] = self.read_sheet(data_file, getattr(Sheets, attr))
 
-        # Add a "sampleDate" column, which is either the date of the grab sample
-        # or the end date of a composite
-        self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
+            # Add a "sampleDate" column, which is either the date of the grab sample
+            # or the end date of a composite
+            # TODO: this should be moved elsewhere
+            self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
+        else:
+            for attr in OdmTables.attributes():
+                self._data[attr] = pd.DataFrame()
 
     def read_csv(self, file_name):
         """Read a csv file.
@@ -279,3 +281,29 @@ class ODM():
             made relating to the collection site.
         """
         return self._data['site_measure']
+
+    @staticmethod
+    def combine(first, second):
+        """Combine the tables from another two ODM objects.
+
+        Parameters
+        ----------
+        first : ODM
+            First ODM object.
+        second : ODM
+            Second ODM object.
+
+        Returns
+        -------
+        ODM
+            ODM object containing tables combined from the two input arguments.
+        """
+        new = ODM()
+        for attr in OdmTables.attributes():
+            new._data[attr] = pd.concat([getattr(first, attr), getattr(second, attr)])
+            new._data[attr].drop_duplicates(subset=new._data[attr].columns[0], keep='first', inplace=True)
+        return new
+
+    def __add__(self, other):
+        """Add two ODM objects together"""
+        return ODM.combine(self, other)
