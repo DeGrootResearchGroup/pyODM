@@ -5,4 +5,5 @@ build/
 dist/
 pyODM.egg-info/
 **/.DS_Store
-
+.idea
+example/output_directory
