@@ -8,6 +8,7 @@ The data model is described here: https://github.com/Big-Life-Lab/PHES-ODM.
 import pandas as pd
 import os
 import warnings
+from pathlib import Path
 
 
 class OdmTables():
@@ -50,13 +51,16 @@ class CSVs(OdmTables):
     site_measure = "SiteMeasure.csv"
 
 
+excel_extensions = ['.xls', '.xlsx', '.xlsm', '.xlsb', 'odf', 'ods', 'odt']
+
+
 class ODM():
     """Class used to represent an Open Data Model file as a set of pandas
     DataFrames.
 
     Parameters
     ----------
-    data_file : str
+    data_loc : str
         Name of directory containing CSV files or
         Name of the Excel file containing the ODM-formatted data
 
@@ -67,22 +71,26 @@ class ODM():
     The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd`` which
     are used for grab and composite samples, respectively.
     """
-    def __init__(self, data_file=None):
+    def __init__(self, data_loc=None):
         """Class initialization"""
         self._data = {}
 
-        if data_file:
-            # Try - read CSVs from directory
-            try:
-                os.listdir(data_file)
-                for attr in OdmTables.attributes():
-                    self._data[attr] = self.read_csv(os.path.join(data_file, getattr(CSVs, attr)))
+        if data_loc:
+            data_loc = Path(data_loc)
+            suffix = data_loc.suffix
 
-            # Exception - read sheets from Excel file
-            except NotADirectoryError:
-                with open(data_file, 'r'):
-                    for attr in OdmTables.attributes():
-                        self._data[attr] = self.read_sheet(data_file, getattr(Sheets, attr))
+            if suffix in excel_extensions: # Excel file
+                for attr in OdmTables.attributes():
+                    self._data[attr] = self.read_sheet(data_loc, getattr(Sheets, attr))
+
+            elif suffix == '': # Directory
+                for attr in OdmTables.attributes():
+                    self._data[attr] = self.read_csv(data_loc / getattr(CSVs, attr))
+
+            else:
+                TypeError(f'A filepath with invalid extension {suffix}, was passed to the ODM constructor. \n'
+                          f'Creating an ODM object requires either a directory containing .csv files or an Excel-like'
+                          f'file with one of the following extensions: {excel_extensions}')
 
             # Add a "sampleDate" column, which is either the date of the grab sample
             # or the end date of a composite
@@ -97,7 +105,7 @@ class ODM():
 
         Parameters
         ----------
-        file_name : str
+        file_name : str, Path
             Name of the CSV file.
 
         Returns
@@ -113,7 +121,7 @@ class ODM():
 
         Parameters
         ----------
-        file_name : str
+        file_name : str, Path
             Name of the Excel file.
         sheet_name : str
             Name of the sheet to be read.
@@ -127,7 +135,7 @@ class ODM():
         return pd.read_excel(file_name, sheet_name)
 
     def export_csvs(self,dir_path):
-        """Export ODM formated dataset into directory as CSV files.
+        """Export ODM formatted dataset into directory as CSV files.
 
         Parameters
         ----------
