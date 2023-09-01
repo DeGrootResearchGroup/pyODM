@@ -6,7 +6,6 @@ The data model is described here: https://github.com/Big-Life-Lab/PHES-ODM.
 """
 
 import pandas as pd
-import os
 import warnings
 from pathlib import Path
 from odm_validation.validation import validate_data
@@ -177,24 +176,24 @@ class ODM():
 
         Parameters
         ----------
-        dir_path : str
+        dir_path : str, Path
             Name of the directory.
         """
-        try:
-            os.listdir(dir_path)
-        except FileNotFoundError:
-            os.mkdir(dir_path)
+        dir_path = Path(dir_path)
+
+        if not dir_path.is_dir():
+            dir_path.mkdir()
+
         for attr in CSVs.attributes():
             df = self._data[attr]
-            df.set_index(df.columns[0], inplace=True)
-            df.to_csv(os.path.join(dir_path, getattr(CSVs, attr)))
+            df.to_csv(dir_path / getattr(CSVs, attr), index=False)
 
     def export_excel(self, file_name):
-        """Export ODM formated dataset into Excel sheets.
+        """Export ODM formatted dataset into Excel sheets.
 
         Parameters
         ----------
-        file_name : str
+        file_name : str, Path
             Name of the Excel file.
         """
         with pd.ExcelWriter(file_name) as excel_writer:
