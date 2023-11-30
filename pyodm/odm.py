@@ -6,8 +6,11 @@ The data model is described here: https://github.com/Big-Life-Lab/PHES-ODM.
 """
 
 import pandas as pd
-import os
 import warnings
+from pathlib import Path
+from odm_validation.validation import validate_data
+import odm_validation.utils as utils
+import tempfile
 
 
 class OdmTables():
@@ -50,13 +53,39 @@ class CSVs(OdmTables):
     site_measure = "SiteMeasure.csv"
 
 
+excel_extensions = ['.xls', '.xlsx', '.xlsm', '.xlsb', '.odf', '.ods', '.odt']
+default_schema_file = Path(__file__).parent.parent / Path('assets/schema-v1.1.0.yml')
+
+
+def _validate_csvs(data_loc, validation_schema_file):
+
+    schema = utils.import_schema(validation_schema_file)
+    validation_summary = {}
+
+    for attr in OdmTables.attributes():
+        samples = utils.import_dataset(data_loc / getattr(CSVs, attr))
+        data = {"samples": samples}
+        report = validate_data(schema, data)
+        if len(report.errors) > 0:
+            raise ValueError(f'The data located at attribute {attr} has generated validation error(s) when compared'
+                             f'against the schema file at {validation_schema_file}. Check to see if the schema version '
+                             f'matches that of the data. Specific details of the error(s) are given below,'
+                             f'and more details about the validator can be found at '
+                             f'https://github.com/Big-Life-Lab/PHES-ODM-Validation'
+                             f'\n\n {report.errors}')
+
+        validation_summary[attr] = report
+
+    return validation_summary
+
+
 class ODM():
     """Class used to represent an Open Data Model file as a set of pandas
     DataFrames.
 
     Parameters
     ----------
-    data_file : str
+    data_loc : str
         Name of directory containing CSV files or
         Name of the Excel file containing the ODM-formatted data
 
@@ -67,27 +96,43 @@ class ODM():
     The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd`` which
     are used for grab and composite samples, respectively.
     """
-    def __init__(self, data_file=None):
+    def __init__(self, data_loc=None, validate_data=True, validation_schema_file=default_schema_file):
         """Class initialization"""
         self._data = {}
+        self.validation_summary = {}
 
-        if data_file:
-            # Try - read CSVs from directory
-            try:
-                os.listdir(data_file)
+        csv_dir = data_loc
+
+        if data_loc:
+            data_loc = Path(data_loc)
+            suffix = data_loc.suffix
+
+            if suffix in excel_extensions:  # Excel file
                 for attr in OdmTables.attributes():
-                    self._data[attr] = self.read_csv(os.path.join(data_file, getattr(CSVs, attr)))
+                    self._data[attr] = self.read_sheet(data_loc, getattr(Sheets, attr))
 
-            # Exception - read sheets from Excel file
-            except NotADirectoryError:
-                with open(data_file, 'r'):
-                    for attr in OdmTables.attributes():
-                        self._data[attr] = self.read_sheet(data_file, getattr(Sheets, attr))
+                if validate_data:  # Export excel to temporary csv files
+                    out_dir = Path(tempfile.mkdtemp(suffix='-' + data_loc.name))
+                    csv_dir = out_dir / 'csv-files'
+                    self.export_csvs(csv_dir)
+
+            elif suffix == '':  # Directory
+                for attr in OdmTables.attributes():
+                    self._data[attr] = self.read_csv(data_loc / getattr(CSVs, attr))
+
+            else:
+                raise TypeError(f'A filepath with invalid extension {suffix}, was passed to the ODM constructor. \n'
+                                f'Creating an ODM object requires either a directory containing .csv files or an'
+                                f' Excel-like file with one of the following extensions: {excel_extensions}')
+
+            if validate_data:
+                self.validation_summary = _validate_csvs(csv_dir, validation_schema_file)
 
             # Add a "sampleDate" column, which is either the date of the grab sample
             # or the end date of a composite
             # TODO: this should be moved elsewhere
             self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
+
         else:
             for attr in OdmTables.attributes():
                 self._data[attr] = pd.DataFrame()
@@ -97,7 +142,7 @@ class ODM():
 
         Parameters
         ----------
-        file_name : str
+        file_name : str, Path
             Name of the CSV file.
 
         Returns
@@ -113,7 +158,7 @@ class ODM():
 
         Parameters
         ----------
-        file_name : str
+        file_name : str, Path
             Name of the Excel file.
         sheet_name : str
             Name of the sheet to be read.
@@ -127,28 +172,28 @@ class ODM():
         return pd.read_excel(file_name, sheet_name)
 
     def export_csvs(self,dir_path):
-        """Export ODM formated dataset into directory as CSV files.
+        """Export ODM formatted dataset into directory as CSV files.
 
         Parameters
         ----------
-        dir_path : str
+        dir_path : str, Path
             Name of the directory.
         """
-        try:
-            os.listdir(dir_path)
-        except FileNotFoundError:
-            os.mkdir(dir_path)
+        dir_path = Path(dir_path)
+
+        if not dir_path.is_dir():
+            dir_path.mkdir()
+
         for attr in CSVs.attributes():
             df = self._data[attr]
-            df.set_index(df.columns[0], inplace=True)
-            df.to_csv(os.path.join(dir_path, getattr(CSVs, attr)))
+            df.to_csv(dir_path / getattr(CSVs, attr), index=False)
 
     def export_excel(self, file_name):
-        """Export ODM formated dataset into Excel sheets.
+        """Export ODM formatted dataset into Excel sheets.
 
         Parameters
         ----------
-        file_name : str
+        file_name : str, Path
             Name of the Excel file.
         """
         with pd.ExcelWriter(file_name) as excel_writer:
