@@ -6,6 +6,7 @@ The data model is described here: https://github.com/Big-Life-Lab/PHES-ODM.
 """
 
 import pandas as pd
+from datetime import datetime
 import os
 import warnings
 
@@ -185,6 +186,9 @@ class ODM():
         self._data['sample'] = self.sample.loc[self.sample["sampleID"].isin(samples["sampleID"])]
         self._data['ww_measure'] = self.ww_measure.loc[self.ww_measure["sampleID"].isin(samples["sampleID"])]
         self._data['site_measure'] = self.site_measure.loc[self.site_measure["sampleID"].isin(samples["sampleID"])]
+
+        # Return the object to allow for assignment
+        return self
 
     @property
     def site(self):
