@@ -1,0 +1,19 @@
+[project]
+name = "pyODM"
+version = "0.1.0"
+description = "A tool for reading and analyzing PHES-ODM files."
+license = {file = "LICENCE"}
+authors = [{name = "Christopher DeGroot", email="christopher.degroot@uwo.ca"},]
+maintainers = [{name = "Christopher DeGroot", email="christopher.degroot@uwo.ca"},]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "datetime",
+  "numpy",
+  "pandas",
+  "scipy",
+  "odm_validation @ git+https://github.com/Big-Life-Lab/PHES-ODM-Validation.git@206-pkg-assets"
+]
+
+[tool.setuptools]
+packages = ["pyodm"]
