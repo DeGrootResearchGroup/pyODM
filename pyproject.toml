@@ -10,10 +10,14 @@ requires-python = ">=3.9"
 dependencies = [
   "datetime",
   "numpy",
+  "openpyxl",
   "pandas",
   "scipy",
   "odm_validation @ git+https://github.com/Big-Life-Lab/PHES-ODM-Validation.git@dev"
 ]
 
 [tool.setuptools]
-packages = ["pyodm"]
+packages = ["pyodm", "pyodm.assets"]
+
+[tool.setuptools.package-data]
+"pyodm.assets" = ["*.yml"]
