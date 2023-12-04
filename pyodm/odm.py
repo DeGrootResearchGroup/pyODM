@@ -55,7 +55,7 @@ class CSVs(OdmTables):
 
 
 excel_extensions = ['.xls', '.xlsx', '.xlsm', '.xlsb', '.odf', '.ods', '.odt']
-default_schema_file = Path(__file__).parent.parent / Path('assets/schema-v1.1.0.yml')
+default_schema_file = Path(__file__).parent / Path('assets/schema-v1.1.0.yml')
 
 
 def _validate_csvs(data_loc, validation_schema_file):
