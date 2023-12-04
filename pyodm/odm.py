@@ -133,7 +133,7 @@ class ODM():
             # Add a "sampleDate" column, which is either the date of the grab sample
             # or the end date of a composite
             # TODO: this should be moved elsewhere
-            self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
+            #self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
 
         else:
             for attr in OdmTables.attributes():
