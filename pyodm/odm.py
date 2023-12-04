@@ -6,6 +6,7 @@ The data model is described here: https://github.com/Big-Life-Lab/PHES-ODM.
 """
 
 import pandas as pd
+from datetime import datetime
 import warnings
 from pathlib import Path
 from odm_validation.validation import validate_data
@@ -96,6 +97,7 @@ class ODM():
     The ``sampleDate`` field unifies the ``dateTime`` and ``dateTimeEnd`` which
     are used for grab and composite samples, respectively.
     """
+
     def __init__(self, data_loc=None, validate_data=True, validation_schema_file=default_schema_file):
         """Class initialization"""
         self._data = {}
@@ -230,6 +232,9 @@ class ODM():
         self._data['sample'] = self.sample.loc[self.sample["sampleID"].isin(samples["sampleID"])]
         self._data['ww_measure'] = self.ww_measure.loc[self.ww_measure["sampleID"].isin(samples["sampleID"])]
         self._data['site_measure'] = self.site_measure.loc[self.site_measure["sampleID"].isin(samples["sampleID"])]
+
+        # Return the object to allow for assignment
+        return self
 
     @property
     def site(self):
