@@ -1,13 +1,14 @@
 from pyodm import ODM
 import pytest
+from pathlib import Path
 
 @pytest.fixture
 def excel_file_path():
-    return ('example/Wastewater_COVID19_2022_02_18/sheets/sheets.xlsx')
+    return Path('example/Wastewater_COVID19_2022_02_18/sheets/sheets.xlsx')
 
 @pytest.fixture
 def csv_dir_path():
-    return ('example/Wastewater_COVID19_2022_02_18/data/')
+    return Path('example/Wastewater_COVID19_2022_02_18/data/')
 
 @pytest.fixture
 def example_odm1(excel_file_path):
