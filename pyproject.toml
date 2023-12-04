@@ -12,7 +12,7 @@ dependencies = [
   "numpy",
   "pandas",
   "scipy",
-  "odm_validation @ git+https://github.com/Big-Life-Lab/PHES-ODM-Validation.git@206-pkg-assets"
+  "odm_validation @ git+https://github.com/Big-Life-Lab/PHES-ODM-Validation.git@dev"
 ]
 
 [tool.setuptools]
