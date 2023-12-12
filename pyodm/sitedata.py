@@ -75,11 +75,11 @@ class SiteData():
         if units == "gcL":
             measure_data.loc[measure_data["unit"] == "gcMl", "value"] = measure_data["value"]*1000.0
             # Replace zeros with 0.5*LOD (LOD is currently a dummy value)
-            measure_data.loc[measure_data["value"] < 300.0] = 150.0
+            measure_data.loc[measure_data["value"] < 300.0, "value"] = 150.0
         elif units == "gcMl":
             measure_data.loc[measure_data["unit"] == "gcL", "value"] = measure_data["value"]/1000.0
             # Replace zeros with 0.5*LOD (LOD is currently a dummy value)
-            measure_data.loc[measure_data["value"] < 0.3] = 0.15
+            measure_data.loc[measure_data["value"] < 0.3, "value"] = 0.15
         else:
             raise ValueError("Invalid units \"{}\" given for wastewater measure.".format(units))
 
