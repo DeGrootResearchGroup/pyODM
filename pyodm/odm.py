@@ -130,11 +130,6 @@ class ODM():
             if validate_data:
                 self.validation_summary = _validate_csvs(csv_dir, validation_schema_file)
 
-            # Add a "sampleDate" column, which is either the date of the grab sample
-            # or the end date of a composite
-            # TODO: this should be moved elsewhere
-            #self._data['sample']["sampleDate"] = pd.to_datetime(self._data['sample']["dateTimeEnd"].fillna(self._data['sample']["dateTime"])).dt.date
-
         else:
             for attr in OdmTables.attributes():
                 self._data[attr] = pd.DataFrame()
@@ -218,20 +213,28 @@ class ODM():
             End date in the format "YYYY-MM-DD"
         """
         # Get a dataframe with the sample IDs and the time information
-        samples = self.sample[["sampleID", "sampleDate"]].copy()
+        samples = self.sample[['sampleID', 'dateTimeEnd', 'dateTime']].copy()
+
+        # Add a temporary column that takes the date from either dateTime or
+        # dateTimeEnd, whichever is present
+        samples['sampleDate'] = pd.to_datetime(samples['dateTimeEnd'].fillna(samples['dateTime'])).dt.date
+
+        # Add a temporary column that tracks whether to keep the sample
+        samples['keep'] = True
 
         # Find samples that meet date criteria
         if start_date:
             start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-            samples = samples[samples["sampleDate"] >= start_date]
+            samples['keep'] = (samples['keep'] & (samples['sampleDate'] >= start_date))
         if end_date:
             end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
-            samples = samples[samples["sampleDate"] <= end_date]
+            samples['keep'] = (samples['keep'] & (samples['sampleDate'] <= end_date))
+        samples = samples[samples['keep']]
 
         # Filter the data that is date-based
-        self._data['sample'] = self.sample.loc[self.sample["sampleID"].isin(samples["sampleID"])]
-        self._data['ww_measure'] = self.ww_measure.loc[self.ww_measure["sampleID"].isin(samples["sampleID"])]
-        self._data['site_measure'] = self.site_measure.loc[self.site_measure["sampleID"].isin(samples["sampleID"])]
+        self._data['sample'] = self.sample.loc[self.sample['sampleID'].isin(samples['sampleID'])]
+        self._data['ww_measure'] = self.ww_measure.loc[self.ww_measure['sampleID'].isin(samples['sampleID'])]
+        self._data['site_measure'] = self.site_measure.loc[self.site_measure['sampleID'].isin(samples['sampleID'])]
 
         # Return the object to allow for assignment
         return self
