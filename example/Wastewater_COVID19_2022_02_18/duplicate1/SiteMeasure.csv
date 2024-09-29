@@ -1,0 +1,11 @@
+uSiteMeasureID,siteMeasureID,siteID,instrumentID,reporterID,sampleID,dateTime,type,typeOther,typeDescription,aggregation,aggregationOther,aggregationDesc,value,unit,qualityFlag,accessToPublic,accessToAllOrgs,accessToSelf,accessToPHAC,accessToLocalHA,accessToProvHA,accessToOtherProv,accessToDetails,notes
+tssTAB,NA,TAB,NA,NA,TAB_20210401,NA,wwTSS,NA,NA,NA,NA,NA,284,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTAB,NA,TAB,NA,NA,TAB_20210404,NA,wwTSS,NA,NA,NA,NA,NA,332,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTHC,NA,THC,NA,NA,THC_20210401,NA,wwTSS,NA,NA,NA,NA,NA,332,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTHC,NA,THC,NA,NA,THC_20210404,NA,wwTSS,NA,NA,NA,NA,NA,320,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTHU,NA,THU,NA,NA,THU_20210401,NA,wwTSS,NA,NA,NA,NA,NA,292,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTHU,NA,THU,NA,NA,THU_20210404,NA,wwTSS,NA,NA,NA,NA,NA,320,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTNT,NA,TNT,NA,NA,TNT_20210401,NA,wwTSS,NA,NA,NA,NA,NA,284,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTNT,NA,TNT,NA,NA,TNT_20210404,NA,wwTSS,NA,NA,NA,NA,NA,304,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssEGB,NA,EGB,NA,NA,EGB_20210404,NA,wwTSS,NA,NA,NA,NA,NA,272,mgL,NA,1,1,NA,1,1,1,1,NA,NA
+tssTAB,NA,TAB,NA,NA,TAB_20210406,NA,wwTSS,NA,NA,NA,NA,NA,360,mgL,NA,1,1,NA,1,1,1,1,NA,NA

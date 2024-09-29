@@ -1,0 +1,11 @@
+uSiteMeasureID,siteMeasureID,siteID,instrumentID,reporterID,sampleID,dateTime,type,typeOther,typeDescription,aggregation,aggregationOther,aggregationDesc,value,unit,qualityFlag,accessToPublic,accessToAllOrgs,accessToSelf,accessToPHAC,accessToLocalHA,accessToProvHA,accessToOtherProv,accessToDetails,notes
+phVAI,NA,VAI,NA,NA,VAI_20220130,NA,wwpH,NA,NA,NA,NA,NA,7.3,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phVII,NA,VII,NA,NA,VII_20220130,NA,wwpH,NA,NA,NA,NA,NA,7.3,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phVLG,NA,VLG,NA,NA,VLG_20220130,NA,wwpH,NA,NA,NA,NA,NA,7.2,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phVLI,NA,VLI,NA,NA,VLI_20220130,NA,wwpH,NA,NA,NA,NA,NA,7.24,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phVNL,NA,VNL,NA,NA,VNL_20220130,NA,wwpH,NA,NA,NA,NA,NA,7.8,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phEGB,NA,EGB,NA,NA,EGB_20220127,NA,wwpH,NA,NA,NA,NA,NA,7.4,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phEGB,NA,EGB,NA,NA,EGB_20220130,NA,wwpH,NA,NA,NA,NA,NA,7.52,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phHDA,NA,HDA,NA,NA,HDA_20220131,NA,wwpH,NA,NA,NA,NA,NA,6.85,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phHHA,NA,HHA,NA,NA,HHA_20220131,NA,wwpH,NA,NA,NA,NA,NA,7.49,pH,NA,1,1,NA,1,1,1,1,NA,NA
+phHMC,NA,HMC,NA,NA,HMC_20220131,NA,wwpH,NA,NA,NA,NA,NA,6.69,pH,NA,1,1,NA,1,1,1,1,NA,NA

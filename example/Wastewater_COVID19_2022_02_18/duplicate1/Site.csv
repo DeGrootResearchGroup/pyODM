@@ -1,0 +1,16 @@
+siteID,name,description,publicHealthDepartment,healthRegion,type,typeOther,notes,sampleTypeDefault,sampleTypeOtherDefault,sampleCollectionDefault,sampleCollectOtherDefault,sampleStorageTempCDefault,measureFractionAnalyzedDefault,geoLat,geoLong,polygonID,sewerNetworkFileLink,sewerNetworkFileBLOB
+EGB,Gold Bar Edmonton,Gold Bar Wastewater Treatment Plant,NA,NA,wwtpMuC,NA,NA,rawWW,NA,cpFP24h,NA,NA,NA,53.5617,-113.4102,polyEGB,NA,NA
+HDA,Dartmouth Halifax,Dartmouth Wastewater Treatment Facility,NA,NA,wwtpMuC,NA,NA,NA,NA,cpFP24h,NA,NA,NA,44.65957,-63.55532,polyHDA,NA,NA
+HHA,Halifax Halifax,Halifax Wastewater Treatment Facility,NA,NA,wwtpMuC,NA,NA,NA,NA,cpFP24h,NA,NA,NA,44.65368,-63.58006,polyHHA,NA,NA
+HMC,Mill Cove Halifax,Mill Cove Water Pollution Control Centre,NA,NA,wwtpMuC,NA,NA,NA,NA,cpTP24h,NA,NA,NA,44.71625,-63.67341,polyHMC,NA,NA
+MMN,Montréal Nord,Station d'épuration des eaux usées Jean-R.-Marcotte,NA,NA,wwtpMuC,NA,NA,rawWW,NA,cpFP24h,NA,NA,NA,45.67186,-73.51862,polyMMN,NA,NA
+MMS,Montréal Sud,Station d'épuration des eaux usées Jean-R.-Marcotte,NA,NA,wwtpMuC,NA,NA,rawWW,NA,cpFP24h,NA,NA,NA,45.67186,-73.51862,polyMMS,NA,NA
+TAB,Ashbridges Bay Toronto,Ashbridges Bay Treatment Plant,NA,NA,wwtpMuC,NA,NA,pstGrit,NA,cpTP24h,NA,NA,NA,43.65745,-79.32008,polyTAB,NA,NA
+THC,Highland Creek Toronto,Highland Creek Treatment Plant,NA,NA,wwtpMuC,NA,NA,pstGrit,NA,cpTP24h,NA,NA,NA,43.76706,-79.15068,polyTHC,NA,NA
+THU,Humber Toronto,Humber Treatment Plant,NA,NA,wwtpMuC,NA,NA,pstGrit,NA,cpTP24h,NA,NA,NA,43.63445,-79.47746,polyTHU,NA,NA
+TNT,North Toronto,North Toronto Treatment Plant,NA,NA,wwtpMuC,NA,NA,pstGrit,NA,cpTP24h,NA,NA,NA,43.70520,-79.35776,polyTNT,NA,NA
+VAI,Annacis Island  Vancouver,Annacis Island Wastewater Treatment Plant,NA,NA,wwtpMuC,NA,NA,rawWW,NA,cpFP24h,NA,NA,NA,49.17164,-122.95166,polyVAI,NA,NA
+VII,Iona Island Vancouver,Iona Island Wastewater Treatment Plant,NA,NA,wwtpMuC,NA,NA,pstGrit,NA,cpFP24h,NA,NA,NA,49.21752,-123.20182,polyVII,NA,NA
+VLG,Lions Gate Vancouver,Lions Gate Wastewater Treatment Plant,NA,NA,wwtpMuC,NA,NA,rawWW,NA,cpFP24h,NA,NA,NA,49.32021,-123.13517,polyVLG,NA,NA
+VLI,Lulu Island Vancouver,Lulu Island Wastewater Treatment Plant,NA,NA,wwtpMuC,NA,NA,rawWW,NA,cpFP24h,NA,NA,NA,49.11519,-123.14735,polyVLI,NA,NA
+VNL,Northwest Langley Vancouver,Northwest Langley Wastewater Treatment Plant,NA,NA,wwtpMuC,NA,NA,pstGrit,NA,cpFP24h,NA,NA,NA,49.19035,-122.66462,polyVNL,NA,NA

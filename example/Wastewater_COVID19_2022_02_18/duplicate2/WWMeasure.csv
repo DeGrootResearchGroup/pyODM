@@ -1,0 +1,11 @@
+uWWMeasureID,reportDate,sampleID,type,value,unit,fractionAnalyzed,aggregation,qualityFlag,reporterID,instrumentID,labID,assayMethodID,accessToPublic,accessToAllOrgs,accessToPHAC,accessToLocalHA,accessToProvHA,accessToOtherProv,analysisDate,typeOther,unitOther,aggregationOther,index,accessToSelf,accessToDetails,notes
+PPMoVVLI,2022-02-04,VLI_20220130,nPPMoV,113283.2289484729,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVVNL,2022-02-04,VNL_20220130,nPPMoV,187129.5736770798,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVEGB,2022-02-04,EGB_20220127,nPPMoV,127419.8513131105,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVEGB,2022-02-04,EGB_20220130,nPPMoV,103418.534715023,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVTAB,2022-02-07,TAB_20220130,nPPMoV,262378.2708502731,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVTHU,2022-02-07,THU_20220130,nPPMoV,137058.1192034678,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVTNT,2022-02-07,TNT_20220130,nPPMoV,104627.5528466884,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVHDA,2022-02-08,HDA_20220131,nPPMoV,65239.45253326111,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVHHA,2022-02-08,HHA_20220131,nPPMoV,91821.67083781089,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA
+PPMoVHMC,2022-02-08,HMC_20220131,nPPMoV,64047.472613205,gcML,solid,mean,0,PHACCM,quantStudio5,MangatChNML,solidsNML,1,1,1,1,1,1,NA,NA,NA,NA,NA,NA,NA,NA

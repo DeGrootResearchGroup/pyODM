@@ -1,0 +1,17 @@
+instrumentID,name,model,description,alias,referenceLink,type,typeOther
+quantStudio5,Applied Biosystems QuantStudio 5,QS5,Real-time quantitative PCR instrument,NA,https://assets.thermofisher.com/TFS-Assets/LSG/manuals/MAN0017162_QS5HIDInstrument_UG.pdf,lab,NA
+autosamplerTAB,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerTHC,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerTHU,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerTNT,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerHHA,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerHDA,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerHMC,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerMMN,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerMMS,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerEGB,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerVAI,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerVII,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerVLG,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerVLI,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA
+autosamplerVNL,NA,NA,Autosampling device for composite sampling.  Échantillonneur automatique pour l'échantillonnage composite.,NA,NA,atline,NA

@@ -336,6 +336,54 @@ class ODM():
         return self._data['site_measure']
 
     @staticmethod
+    def __handle_pseudo_duplicates__(first:pd.DataFrame ,second:pd.DataFrame, column:str) -> None:
+        """Identify collisions in column and modify values of second table in-place
+
+        The need for this method arose from GITHUB ISSUE #7 
+        https://github.com/DeGrootResearchGroup/pyODM/issues/7
+        Handle collisions in sampleID column of sample table
+        Each lab has its own arbitrary naming convention for sampleID.
+        This could potentially lead to two labs coincidentally assigning 
+        identical sampleID for two records, even though those two records 
+        are not necessarily duplicates. To handle such pseudo-duplicates, 
+        we modify the second occurrence of sampleID with a suffix _1, _2, 
+
+        Parameters
+        ----------
+        first : Pandas DataFrame
+            First table.
+        second : Pandas DataFrame
+            Second table.
+
+        Returns
+        -------
+        None
+            This function modifies the second table in-place
+        """
+        collisions_index : dict[int,list] = {} 
+        len_first : int = len(first[column])
+        len_second : int = len(second[column])
+        for i in range(len_first):
+            for j in range(len_second):
+                if(first[column][i] == second[column][j]):
+                    first_idx : int = first.index[i]
+                    second_idx : int = second.index[j]
+                    if(first_idx in collisions_index):
+                        collisions_index[first_idx].append(second_idx)
+                    else:
+                        collisions_index[first_idx] = [second_idx]
+        for first_idx in collisions_index:
+            suffix : int = 1
+            for second_idx in collisions_index[first_idx]:
+                if(not first.iloc[first_idx].equals(second.iloc[second_idx])):
+                    # pseudo-duplicates
+                    newval = second.iloc[second_idx][column] + "_" + str(suffix)
+                    second.loc[second_idx,column] = newval
+                    suffix += 1
+
+        return
+
+    @staticmethod
     def combine(first, second):
         """Combine the tables from another two ODM objects.
 
@@ -353,8 +401,19 @@ class ODM():
         """
         new = ODM()
         for attr in OdmTables.attributes():
+            
+            # handle pseudo-duplicates of Sample
+            if(attr == 'sample'):
+                ODM.__handle_pseudo_duplicates__(first.sample,second.sample,'sampleID')
+            
+            # handle pseudo-duplicates of Site
+            if(attr == 'site'):
+                ODM.__handle_pseudo_duplicates__(first.site,second.site,'siteID')
+            
             new._data[attr] = pd.concat([getattr(first, attr), getattr(second, attr)])
-            new._data[attr].drop_duplicates(subset=new._data[attr].columns[0], keep='first', inplace=True)
+            
+            # Two records are considered duplicates if they have identical values for all columns except the first
+            new._data[attr].drop_duplicates(subset=new._data[attr].columns[1:], keep='first', inplace=True)
         return new
 
     def __add__(self, other):
